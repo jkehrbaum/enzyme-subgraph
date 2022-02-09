@@ -3,7 +3,6 @@ import { ensureAccount, ensureManager } from '../entities/Account';
 import { ensureAsset } from '../entities/Asset';
 import { ensureComptrollerProxy } from '../entities/ComptrollerProxy';
 import { createFund } from '../entities/Fund';
-import { ensureNetwork } from '../entities/Network';
 import { ensureRelease } from '../entities/Release';
 import { ensureTransaction } from '../entities/Transaction';
 import {
@@ -113,9 +112,6 @@ export function handleVaultCallDeregistered(event: VaultCallDeregistered): void 
 }
 
 export function handleVaultCallRegistered(event: VaultCallRegistered): void {
-  // NOTE: This is the first event on testnet.
-  ensureNetwork(event);
-
   let registered = new VaultCallRegisteredEvent(genericId(event));
   registered.timestamp = event.block.timestamp;
   registered.transaction = ensureTransaction(event).id;

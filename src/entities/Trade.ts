@@ -59,7 +59,6 @@ export function trackTrade(
     trade.method = tradeType;
     trade.incomingAssetAmount = incomingAssetAmounts[0].id;
     trade.outgoingAssetAmount = outgoingAssetAmounts[0].id;
-    trade.price = outgoingAssetAmounts[0].amount.div(incomingAssetAmounts[0].amount);
     trade.timestamp = event.block.timestamp;
     trade.fundState = fund.state;
     trade.save();
@@ -89,7 +88,6 @@ export function trackTrade(
     trade.method = tradeType;
     trade.incomingAssetAmount = incomingAssetAmounts[0].id;
     trade.outgoingAssetAmount = outgoingAssetAmounts[0].id;
-    trade.price = outgoingAssetAmounts[0].amount.div(incomingAssetAmounts[0].amount);
     trade.timestamp = event.block.timestamp;
     trade.fundState = fund.state;
     trade.save();
@@ -118,7 +116,6 @@ export function trackTrade(
     trade.method = tradeType;
     trade.incomingAssetAmount = incomingAssetAmounts[0].id;
     trade.outgoingAssetAmount = outgoingAssetAmounts[0].id;
-    trade.price = outgoingAssetAmounts[0].amount.div(incomingAssetAmounts[0].amount);
     trade.timestamp = event.block.timestamp;
     trade.fundState = fund.state;
     trade.save();

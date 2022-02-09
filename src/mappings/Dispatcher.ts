@@ -4,7 +4,6 @@ import { ensureManager } from '../entities/Account';
 import { ensureComptrollerProxy } from '../entities/ComptrollerProxy';
 import { useFund } from '../entities/Fund';
 import { ensureMigration, generateMigrationId, useMigration } from '../entities/Migration';
-import { ensureNetwork } from '../entities/Network';
 import { ensureRelease } from '../entities/Release';
 import { ensureTransaction } from '../entities/Transaction';
 import {
@@ -39,15 +38,8 @@ import { ComptrollerLibDataSource } from '../generated/templates';
 import { genericId } from '../utils/genericId';
 
 export function handleCurrentFundDeployerSet(event: CurrentFundDeployerSet): void {
-  // NOTE: This is the first event on kovan.
-  let network = ensureNetwork(event);
-
   // Set up release (each new fund deployer is a release)
-  let release = ensureRelease(event.params.nextFundDeployer.toHex(), event);
-
-  network.currentRelease = release.id;
-  network.save();
-
+  ensureRelease(event.params.nextFundDeployer.toHex(), event);
   let fundDeployerSet = new FundDeployerSetEvent(genericId(event));
   fundDeployerSet.timestamp = event.block.timestamp;
   fundDeployerSet.transaction = ensureTransaction(event).id;

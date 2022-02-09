@@ -17,7 +17,6 @@ export function createHoldingState(
   holding.timestamp = event.block.timestamp;
   holding.fund = fund.id;
   holding.asset = asset.id;
-  holding.price = asset.price;
   holding.amount = amount;
   holding.events = [cause.getString('id')];
   holding.save();

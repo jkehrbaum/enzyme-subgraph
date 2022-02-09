@@ -16,7 +16,6 @@ export function createAssetAmount(
   let assetAmount = new AssetAmount(id);
   assetAmount.asset = asset.id;
   assetAmount.amount = amount;
-  assetAmount.price = asset.price;
   assetAmount.save();
 
   return assetAmount;

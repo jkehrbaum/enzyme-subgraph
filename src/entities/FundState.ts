@@ -1,7 +1,6 @@
 import { ethereum } from '@graphprotocol/graph-ts';
 import { FeeState, Fund, FundState, PortfolioState, ShareState } from '../generated/schema';
 import { logCritical } from '../utils/logCritical';
-import { loadCurrentCurrencyPrices } from './CurrencyPrice';
 import { useFeeState } from './FeeState';
 import { trackDailyFundState, trackHourlyFundState, trackMonthlyFundState } from './PeriodicFundState';
 import { usePortfolioState } from './PortfolioState';
@@ -27,7 +26,6 @@ export function createFundState(
   state.feeState = feeState.id;
   state.events = new Array<string>();
   state.investmentCount = investmentCount as i32;
-  state.currencyPrices = loadCurrentCurrencyPrices().map<string>((price) => price.id);
   state.save();
 
   return state;

@@ -119,37 +119,6 @@ interface Trade {
 # Enums
 #################################################
 
-enum AssetType {
-  UNKNOWN
-  DERIVATIVE
-  ETH
-  USD
-}
-
-enum CurveAssetType {
-  GAUGE
-  POOL
-}
-
-enum DerivativeType {
-  Aave
-  Alpha
-  Chai
-  Compound
-  CurvePool
-  Idle
-  Stakehound
-  Synthetix
-  UniswapPool
-  Yearn
-}
-
-enum ChainlinkAggregatorProxyType {
-  ASSET
-  ETHUSD
-  CURRENCY
-}
-
 enum FeeHook {
   Continuous
   BuySharesSetup
@@ -1212,71 +1181,6 @@ type Release @entity {
   open: BigInt!
   close: BigInt
   funds: [Fund!]! @derivedFrom(field: "release")
-  assets: [Asset!]! @derivedFrom(field: "releases")
-  network: Network!
-  # contracts
-  # TODO: make contracts
-  adapterBlacklist: String!
-  adapterWhitelist: String!
-  aggregatedDerivativePriceFeed: String!
-  alphaHomoraV1Adapter: String!
-  aaveAdapter: String!
-  assetBlacklist: String!
-  assetWhitelist: String!
-  buySharesCallerWhitelist: String!
-  chaiAdapter: String!
-  chaiIntegratee: String!
-  chainlinkPriceFeed: String!
-  compoundAdapter: String!
-  comptrollerLib: String!
-  dispatcher: String!
-  entranceRateBurnFee: String!
-  entranceRateDirectFee: String!
-  feeManager: String!
-  fundActionsWrapper: String!
-  fundDeployer: String!
-  guaranteedRedemption: String!
-  idleAdapter: String!
-  idlePriceFeed: String!
-  integrationManager: String!
-  investorWhitelist: String!
-  kyberAdapter: String!
-  kyberIntegratee: String!
-  managementFee: String!
-  maxConcentration: String!
-  minMaxInvestment: String!
-  paraSwapAdapter: String!
-  paraSwapV4Adapter: String!
-  performanceFee: String!
-  policyManager: String!
-  synthetixAdapter: String!
-  synthetixAddressResolver: String!
-  synthetixDelegateApprovals: String!
-  synthetixIntegratee: String!
-  trackedAssetsAdapter: String!
-  uniswapV2Adapter: String!
-  uniswapV2Integratee: String!
-  yearnVaultV2Adapter: String!
-  valueInterpreter: String!
-  vaultLib: String!
-  wethToken: String!
-  zeroExV2Adapter: String!
-  aavePriceFeed: String!
-  alphaHomoraV1PriceFeed: String!
-  chaiPriceFeed: String!
-  compoundPriceFeed: String!
-  curvePriceFeed: String!
-  curveExchangeAdapter: String!
-  curveLiquidityAaveAdapter: String!
-  curveLiquidityEursAdapter: String!
-  curveLiquiditySethAdapter: String!
-  curveLiquidityStethAdapter: String!
-  lidoStethPriceFeed: String!
-  stakehoundEthPriceFeed: String!
-  synthetixPriceFeed: String!
-  uniswapV2PoolPriceFeed: String!
-  wdgldPriceFeed: String!
-  yearnVaultV2PriceFeed: String!
 }
 
 type Account @entity {
@@ -1508,7 +1412,6 @@ type HoldingState implements FundStateInterface @entity {
   fund: Fund!
   timestamp: BigInt!
   asset: Asset!
-  price: AssetPrice
   amount: BigDecimal!
   events: [FundEventInterface!]!
 }
@@ -1520,7 +1423,6 @@ type FundState implements FundStateInterface @entity {
   shares: ShareState!
   portfolio: PortfolioState!
   feeState: FeeState!
-  currencyPrices: [CurrencyPrice!]!
   investmentCount: Int!
   events: [FundEventInterface!]!
 }
@@ -1581,7 +1483,6 @@ type TokenSwapTrade implements Trade @entity {
   method: IntegrationMethod!
   incomingAssetAmount: AssetAmount!
   outgoingAssetAmount: AssetAmount!
-  price: BigDecimal!
   timestamp: BigInt!
   fundState: FundState!
 }
@@ -1604,7 +1505,6 @@ type LendTrade implements Trade @entity {
   method: IntegrationMethod!
   incomingAssetAmount: AssetAmount!
   outgoingAssetAmount: AssetAmount!
-  price: BigDecimal!
   timestamp: BigInt!
   fundState: FundState!
 }
@@ -1627,7 +1527,6 @@ type RedeemTrade implements Trade @entity {
   method: IntegrationMethod!
   incomingAssetAmount: AssetAmount!
   outgoingAssetAmount: AssetAmount!
-  price: BigDecimal!
   timestamp: BigInt!
   fundState: FundState!
 }
@@ -1748,7 +1647,7 @@ type UnstakeAndRedeemTrade implements Trade @entity {
 }
 
 #################################################
-# Assets and prices
+# Assets
 #################################################
 
 type Asset @entity {
@@ -1756,288 +1655,10 @@ type Asset @entity {
   name: String!
   symbol: String!
   decimals: Int!
-  type: AssetType!
-
-  releases: [Release!]!
-
-  # Details for certain derivative assets
-  derivativeType: DerivativeType
-  underlyingAsset: Asset
-  curvePoolAssetDetails: CurvePoolAssetDetail
-  uniswapV2PoolAssetDetails: UniswapV2PoolAssetDetail
-
-  # Latest price and candles
-  price: AssetPrice
-  hourly: HourlyAssetPriceCandle
-  daily: DailyAssetPriceCandle
-  monthly: MonthlyAssetPriceCandle
-
-  # Historical prices and candles
-  priceHistory: [AssetPrice!]! @derivedFrom(field: "asset")
-  hourlyHistory: [HourlyAssetPriceCandle!]! @derivedFrom(field: "asset")
-  dailyHistory: [DailyAssetPriceCandle!]! @derivedFrom(field: "asset")
-  monthlyHistory: [MonthlyAssetPriceCandle!]! @derivedFrom(field: "asset")
-
-  # Fund references
-  # denominatedFunds: [Fund!]! @derivedFrom(field: "denominationAsset")
-  trackingFunds: [Fund!]! @derivedFrom(field: "trackedAssets")
-  blacklisted: [AssetBlacklistSetting!]! @derivedFrom(field: "assets")
-  whitelisted: [AssetWhitelistSetting!]! @derivedFrom(field: "assets")
-
-  # network-wide values
-  networkAssetHolding: NetworkAssetHolding
-  networkAssetHoldingHistory: [NetworkAssetHolding!]! @derivedFrom(field: "asset")
-}
-
-type Currency @entity {
-  id: ID!
-
-  # Latest price and candles
-  price: CurrencyPrice
-  hourly: HourlyCurrencyPriceCandle
-  daily: DailyCurrencyPriceCandle
-  monthly: MonthlyCurrencyPriceCandle
-
-  # Historical prices and candles
-  priceHistory: [CurrencyPrice!]! @derivedFrom(field: "currency")
-  hourlyHistory: [HourlyCurrencyPriceCandle!]! @derivedFrom(field: "currency")
-  dailyHistory: [DailyCurrencyPriceCandle!]! @derivedFrom(field: "currency")
-  monthlyHistory: [MonthlyCurrencyPriceCandle!]! @derivedFrom(field: "currency")
-}
-
-type CurvePoolAssetDetail @entity {
-  id: ID!
-  pool: String!
-  gauge: String!
-  lpToken: Asset!
-  gaugeToken: Asset!
-  curveAssetType: CurveAssetType!
-  invariantProxyAsset: Asset!
-  numberOfTokens: Int!
-  token0: Asset
-  token1: Asset
-  token2: Asset
-}
-
-type UniswapV2PoolAssetDetail @entity {
-  id: ID!
-  token0: Asset!
-  token1: Asset!
 }
 
 type AssetAmount @entity {
   id: ID!
-  asset: Asset!
-  amount: BigDecimal!
-  price: AssetPrice
-}
-
-# TODO (after release): introduce AssetPriceInterface
-type AssetPrice @entity {
-  id: ID!
-  asset: Asset!
-  price: BigDecimal!
-  timestamp: BigInt!
-}
-
-# TODO (after release): introduce CurrencyPriceInterface
-type CurrencyPrice @entity {
-  id: ID!
-  currency: Currency!
-  price: BigDecimal!
-  timestamp: BigInt!
-}
-
-type HourlyAssetPriceCandle @entity {
-  id: ID!
-  asset: Asset!
-  group: HourlyPriceCandleGroup!
-  from: BigInt!
-  to: BigInt!
-  open: BigDecimal!
-  openRef: AssetPrice!
-  close: BigDecimal!
-  closeRef: AssetPrice!
-  low: BigDecimal!
-  lowRef: AssetPrice!
-  high: BigDecimal!
-  highRef: AssetPrice!
-}
-
-type DailyAssetPriceCandle @entity {
-  id: ID!
-  asset: Asset!
-  group: DailyPriceCandleGroup!
-  from: BigInt!
-  to: BigInt!
-  open: BigDecimal!
-  openRef: AssetPrice!
-  close: BigDecimal!
-  closeRef: AssetPrice!
-  low: BigDecimal!
-  lowRef: AssetPrice!
-  high: BigDecimal!
-  highRef: AssetPrice!
-}
-
-type MonthlyAssetPriceCandle @entity {
-  id: ID!
-  asset: Asset!
-  group: MonthlyPriceCandleGroup!
-  from: BigInt!
-  to: BigInt!
-  open: BigDecimal!
-  openRef: AssetPrice!
-  close: BigDecimal!
-  closeRef: AssetPrice!
-  low: BigDecimal!
-  lowRef: AssetPrice!
-  high: BigDecimal!
-  highRef: AssetPrice!
-}
-
-type HourlyCurrencyPriceCandle @entity {
-  id: ID!
-  currency: Currency!
-  group: HourlyPriceCandleGroup!
-  from: BigInt!
-  to: BigInt!
-  open: BigDecimal!
-  openRef: CurrencyPrice!
-  close: BigDecimal!
-  closeRef: CurrencyPrice!
-  low: BigDecimal!
-  lowRef: CurrencyPrice!
-  high: BigDecimal!
-  highRef: CurrencyPrice!
-}
-
-type DailyCurrencyPriceCandle @entity {
-  id: ID!
-  currency: Currency!
-  group: DailyPriceCandleGroup!
-  from: BigInt!
-  to: BigInt!
-  open: BigDecimal!
-  openRef: CurrencyPrice!
-  close: BigDecimal!
-  closeRef: CurrencyPrice!
-  low: BigDecimal!
-  lowRef: CurrencyPrice!
-  high: BigDecimal!
-  highRef: CurrencyPrice!
-}
-
-type MonthlyCurrencyPriceCandle @entity {
-  id: ID!
-  currency: Currency!
-  group: MonthlyPriceCandleGroup!
-  from: BigInt!
-  to: BigInt!
-  open: BigDecimal!
-  openRef: CurrencyPrice!
-  close: BigDecimal!
-  closeRef: CurrencyPrice!
-  low: BigDecimal!
-  lowRef: CurrencyPrice!
-  high: BigDecimal!
-  highRef: CurrencyPrice!
-}
-
-type HourlyPriceCandleGroup @entity {
-  id: ID!
-  from: BigInt!
-  to: BigInt!
-  assetCandles: [HourlyAssetPriceCandle!]! @derivedFrom(field: "group")
-  currencyCandles: [HourlyCurrencyPriceCandle!]! @derivedFrom(field: "group")
-}
-
-type DailyPriceCandleGroup @entity {
-  id: ID!
-  from: BigInt!
-  to: BigInt!
-  assetCandles: [DailyAssetPriceCandle!]! @derivedFrom(field: "group")
-  currencyCandles: [DailyCurrencyPriceCandle!]! @derivedFrom(field: "group")
-}
-
-type MonthlyPriceCandleGroup @entity {
-  id: ID!
-  from: BigInt!
-  to: BigInt!
-  assetCandles: [MonthlyAssetPriceCandle!]! @derivedFrom(field: "group")
-  currencyCandles: [MonthlyCurrencyPriceCandle!]! @derivedFrom(field: "group")
-}
-
-type ChainlinkAggregatorProxy @entity {
-  id: ID!
-  aggregator: String!
-  type: ChainlinkAggregatorProxyType!
-  decimals: Int!
-  asset: Asset
-  currency: Currency
-}
-
-# Knowing the timestamp of the most recent update allows us to create missing
-# candles / fill gaps and decide when to re-fetch prices for our derivatives.
-# Every time a new hour / day is started (checked with modulo based
-# on the timestamp), we create new group entities and also fill gaps in the
-# candles. We can always load the most recent candles because we know the
-# when it was most recently updated.
-type Cron @entity {
-  id: ID!
-
-  # The last time that cron was triggered.
-  cron: BigInt!
-
-  # The currently tracked primitives. This is used to know which assets we
-  # need to maintain candles for.
-  primitives: [Asset!]!
-
-  # Asset with prices quoted in USD
-  usdQuotedPrimitives: [Asset!]!
-
-  # The currently tracked derivatives. This is used to know which derivatives
-  # to fetch prices for (as a side effect, because they don't have a dedicated
-  # price oracle that emits events on their behalf) and to update their candles.
-  derivatives: [Asset!]!
-
-  #
-  currencies: [Currency!]!
-
-  # ChainlinkAggregatorProxies
-  chainlinkAggregatorProxies: [ChainlinkAggregatorProxy!]!
-}
-
-#################################################
-# Network stats
-#################################################
-
-# TODO: create second subgraph for network stats
-
-type Network @entity {
-  id: ID!
-  timestamp: BigInt!
-  currentRelease: Release
-  releases: [Release!] @derivedFrom(field: "network")
-  state: NetworkState!
-  stateHistory: [NetworkState!]! @derivedFrom(field: "network")
-}
-
-type NetworkState @entity {
-  id: ID!
-  network: Network!
-  timestamp: BigInt!
-  # TODO : derived from
-  assetHoldings: [NetworkAssetHolding!]!
-  funds: Int!
-  managers: Int!
-  investors: Int!
-  investments: Int!
-}
-
-type NetworkAssetHolding @entity {
-  id: ID!
-  timestamp: BigInt!
   asset: Asset!
   amount: BigDecimal!
 }
