@@ -1,5 +1,6 @@
+import { BigDecimal } from '@graphprotocol/graph-ts';
 import { ensureAsset } from '../entities/Asset';
-import { fetchAssetPrice, trackAssetPrice } from '../entities/AssetPrice';
+import { trackAssetPrice } from '../entities/AssetPrice';
 import { checkDerivativeType } from '../entities/DerivativeType';
 import { releaseFromPriceFeed } from '../entities/Release';
 import { ensureTransaction } from '../entities/Transaction';
@@ -11,7 +12,6 @@ import {
 import { DerivativeAddedEvent, DerivativeRemovedEvent, DerivativeUpdatedEvent } from '../generated/schema';
 import { arrayDiff } from '../utils/arrayDiff';
 import { arrayUnique } from '../utils/arrayUnique';
-import { ensureCron, triggerCron } from '../utils/cronManager';
 import { genericId } from '../utils/genericId';
 
 export function handleDerivativeAdded(event: DerivativeAdded): void {
@@ -34,15 +34,7 @@ export function handleDerivativeAdded(event: DerivativeAdded): void {
   derivativeAdded.save();
 
   // Whenever a new asset is registered, we need to fetch its current price immediately.
-  let current = fetchAssetPrice(derivative);
-  trackAssetPrice(derivative, event.block.timestamp, current);
-
-  let cron = ensureCron();
-  cron.derivatives = arrayUnique<string>(cron.derivatives.concat([derivative.id]));
-  cron.save();
-
-  // It's important that we run cron last.
-  triggerCron(event.block.timestamp);
+  trackAssetPrice(derivative, event.block.timestamp, BigDecimal.fromString('0'));
 }
 
 export function handleDerivativeRemoved(event: DerivativeRemoved): void {
@@ -60,12 +52,8 @@ export function handleDerivativeRemoved(event: DerivativeRemoved): void {
   derivativeRemoved.transaction = ensureTransaction(event).id;
   derivativeRemoved.save();
 
-  let cron = ensureCron();
-  cron.derivatives = arrayDiff<string>(cron.derivatives, [derivative.id]);
-  cron.save();
-
-  // It's important that we run cron last.
-  triggerCron(event.block.timestamp);
+  // Whenever a new asset is registered, we need to fetch its current price immediately.
+  trackAssetPrice(derivative, event.block.timestamp, BigDecimal.fromString('0'));
 }
 
 export function handleDerivativeUpdated(event: DerivativeUpdated): void {
@@ -80,9 +68,5 @@ export function handleDerivativeUpdated(event: DerivativeUpdated): void {
   derivativeUpdated.save();
 
   // Whenever a new asset is registered, we need to fetch its current price immediately.
-  let current = fetchAssetPrice(derivative);
-  trackAssetPrice(derivative, event.block.timestamp, current);
-
-  // It's important that we run cron last.
-  triggerCron(event.block.timestamp);
+  trackAssetPrice(derivative, event.block.timestamp, BigDecimal.fromString('0'));
 }
